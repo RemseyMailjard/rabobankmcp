@@ -91,6 +91,8 @@ uv sync
 
 This creates the virtual environment and installs dependencies from `pyproject.toml`.
 
+For a guided walkthrough, see [SETUP_LAB.md](SETUP_LAB.md).
+
 ---
 
 ## Training Pages
