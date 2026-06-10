@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run internal API",
+      "type": "shell",
+      "command": "uv run bank-api",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run MCP server",
+      "type": "shell",
+      "command": "uv run bank-mcp",
+      "problemMatcher": []
+    }
+  ]
+}

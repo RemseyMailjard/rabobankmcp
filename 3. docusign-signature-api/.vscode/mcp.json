@@ -1,0 +1,28 @@
+{
+	"servers": {
+		"leave-manager": {
+			"type": "stdio",
+			"command": "uv",
+			"args": [
+				"run",
+				"--directory",
+				"${workspaceFolder}/my-first-mcp-server",
+				"mcp",
+				"run",
+				"main.py"
+			]
+		},
+		"helpdesk": {
+			"type": "stdio",
+			"command": "uv",
+			"args": [
+				"run",
+				"--directory",
+				"${workspaceFolder}/helpdesk-api",
+				"mcp",
+				"run",
+				"solution_simple.py"
+			]
+		}
+	}
+}

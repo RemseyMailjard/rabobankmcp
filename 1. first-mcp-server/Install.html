@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimal MCP Server Demo with uv, FastMCP and VS Code</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4efe6;
+      --bg-soft: #fbf8f2;
+      --surface: rgba(255, 255, 255, 0.78);
+      --surface-strong: #ffffff;
+      --text: #132238;
+      --muted: #5b6677;
+      --accent: #0f4c81;
+      --accent-2: #b85c38;
+      --border: rgba(19, 34, 56, 0.12);
+      --shadow: 0 18px 50px rgba(19, 34, 56, 0.12);
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --chip-bg: rgba(15, 76, 129, 0.1);
+      --chip-text: #0f4c81;
+      --max-width: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 76, 129, 0.12), transparent 34%),
+        radial-gradient(circle at right 10%, rgba(184, 92, 56, 0.10), transparent 30%),
+        linear-gradient(180deg, #f8f2e8 0%, #f4efe6 55%, #efe7da 100%);
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 0.18em;
+    }
+
+    .page-shell {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.72));
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -120px -120px auto;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(15, 76, 129, 0.18), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--chip-bg);
+      color: var(--chip-text);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.15;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 4vw, 4rem);
+      margin-top: 18px;
+      max-width: 14ch;
+    }
+
+    .hero p {
+      max-width: 70ch;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .meta-card {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      min-width: 180px;
+      backdrop-filter: blur(8px);
+    }
+
+    .meta-card span {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .meta-card strong {
+      font-size: 1rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .toc,
+    .content-card {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .toc {
+      position: sticky;
+      top: 18px;
+      border-radius: 22px;
+      padding: 22px;
+    }
+
+    .toc h2 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+    }
+
+    .toc p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .toc nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .toc a {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid transparent;
+    }
+
+    .toc a:hover,
+    .toc a:focus-visible {
+      border-color: rgba(15, 76, 129, 0.22);
+      background: #fff;
+    }
+
+    .content-card {
+      border-radius: 28px;
+      padding: 30px;
+    }
+
+    .section {
+      padding: 24px 0;
+      border-top: 1px solid rgba(19, 34, 56, 0.08);
+      scroll-margin-top: 24px;
+    }
+
+    .section:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .section h2 {
+      font-size: clamp(1.55rem, 2vw, 2.25rem);
+      margin-bottom: 10px;
+    }
+
+    .section h3 {
+      font-size: 1.15rem;
+      margin-top: 18px;
+      margin-bottom: 10px;
+    }
+
+    .section p {
+      margin: 10px 0;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .info-card {
+      border: 1px solid rgba(15, 76, 129, 0.12);
+      background: linear-gradient(180deg, #fff, rgba(255, 255, 255, 0.82));
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .info-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    ul, ol {
+      margin: 12px 0 12px 22px;
+      padding: 0;
+    }
+
+    li + li {
+      margin-top: 6px;
+    }
+
+    .code-block {
+      margin: 14px 0;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 23, 42, 0.16);
+      background: var(--code-bg);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    .code-block-header {
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(226, 232, 240, 0.78);
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px 18px 18px;
+      overflow-x: auto;
+      color: var(--code-text);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    code {
+      font-family: Consolas, "SFMono-Regular", Menlo, Monaco, monospace;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent-2);
+      background: rgba(184, 92, 56, 0.08);
+      border-radius: 0 16px 16px 0;
+      padding: 14px 16px;
+      margin: 14px 0;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .toc {
+        position: static;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell {
+        padding: 18px 12px 36px;
+      }
+
+      .hero,
+      .content-card,
+      .toc {
+        border-radius: 20px;
+        padding: 20px;
+      }
+
+      .hero-meta {
+        flex-direction: column;
+      }
+
+      .meta-card {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero" aria-labelledby="page-title">
+      <span class="eyebrow">MCP demo guide</span>
+      <h1 id="page-title">Minimal MCP Server Demo with uv, FastMCP and VS Code</h1>
+      <p>This guide shows how to create and run a minimal MCP server for a developer demo. The goal is to build the smallest possible working example: one Python project, one MCP server, one MCP tool, running locally with uv and connected to VS Code / GitHub Copilot.</p>
+
+      <div class="hero-meta">
+        <div class="meta-card">
+          <span>Project</span>
+          <strong>first-mcp-server</strong>
+        </div>
+        <div class="meta-card">
+          <span>Runtime</span>
+          <strong>Python + uv</strong>
+        </div>
+        <div class="meta-card">
+          <span>Demo outcome</span>
+          <strong>One approved MCP tool</strong>
+        </div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <aside class="toc" aria-label="Table of contents">
+        <h2>Contents</h2>
+        <p>Jump to the setup steps, the code, and the demo notes.</p>
+        <nav>
+          <a href="#install-uv">1. Install uv on Windows</a>
+          <a href="#create-project">2. Create a new MCP project</a>
+          <a href="#add-fastmcp">3. Add FastMCP</a>
+          <a href="#server">4. Create the minimal MCP server</a>
+          <a href="#run-http">5. Run the MCP server over HTTP</a>
+          <a href="#mcp-warning">6. Do not test /mcp as a webpage</a>
+          <a href="#connect-vscode">7. Connect to VS Code</a>
+          <a href="#start-vscode">8. Start the server in VS Code</a>
+          <a href="#use-tool">9. Use the MCP tool</a>
+          <a href="#demo-talk">10. What to explain during the demo</a>
+          <a href="#summary">Summary</a>
+        </nav>
+      </aside>
+
+      <article class="content-card">
+        <section class="section" id="install-uv">
+          <h2>1. Install uv on Windows</h2>
+          <p>Open PowerShell and run:</p>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code></pre>
+          </div>
+          <p>Restart your terminal and verify the installation:</p>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>uv --version</code></pre>
+          </div>
+          <p>Optional: install Python through uv:</p>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>uv python install 3.12</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="create-project">
+          <h2>2. Create a new MCP project</h2>
+          <p>Go to the folder where you want to create the demo project.</p>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>cd "C:\Users\Remse\Desktop\MCP-server Rabobank\MCP-server examples"</code></pre>
+          </div>
+          <p>Create a new project:</p>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>uv init first-mcp-server
+cd first-mcp-server</code></pre>
+          </div>
+          <p class="muted">This creates a Python project with a <code>pyproject.toml</code> file.</p>
+        </section>
+
+        <section class="section" id="add-fastmcp">
+          <h2>3. Add FastMCP</h2>
+          <p>Install FastMCP into the project:</p>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>uv add fastmcp</code></pre>
+          </div>
+          <p>For this minimal demo, fastapi and requests are not needed.</p>
+        </section>
+
+        <section class="section" id="server">
+          <h2>4. Create the minimal MCP server</h2>
+          <p>Open <code>main.py</code> and replace the content with:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>from fastmcp import FastMCP
+
+mcp = FastMCP("Rabobank Demo MCP Server")
+
+
+@mcp.tool()
+def get_account_balance(account_number: str) -> str:
+    """Get the balance for an internal Rabobank account."""
+    return f"Account {account_number} has a balance of €1,250.00"
+
+
+if __name__ == "__main__":
+    mcp.run()</code></pre>
+          </div>
+
+          <p>This server exposes one MCP tool:</p>
+          <div class="code-block">
+            <div class="code-block-header">Text</div>
+            <pre><code>get_account_balance</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="run-http">
+          <h2>5. Run the MCP server over HTTP</h2>
+          <p>Run the server with HTTP transport:</p>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>uv run fastmcp run main.py:mcp --transport http --port 8000</code></pre>
+          </div>
+          <p>You should see output similar to:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal output</div>
+            <pre><code>Starting MCP server 'Rabobank Demo MCP Server'
+with transport 'http' on http://127.0.0.1:8000/mcp
+Uvicorn running on http://127.0.0.1:8000</code></pre>
+          </div>
+          <p>Leave this terminal open.</p>
+        </section>
+
+        <section class="section" id="mcp-warning">
+          <h2>6. Important: do not test /mcp as a normal webpage</h2>
+          <p>If you open this URL in the browser:</p>
+          <div class="code-block">
+            <div class="code-block-header">URL</div>
+            <pre><code>http://127.0.0.1:8000/mcp</code></pre>
+          </div>
+          <p>You may see:</p>
+          <div class="code-block">
+            <div class="code-block-header">JSON response</div>
+            <pre><code>{
+  "jsonrpc": "2.0",
+  "id": "server-error",
+  "error": {
+    "code": -32600,
+    "message": "Not Acceptable: Client must accept text/event-stream"
+  }
+}</code></pre>
+          </div>
+          <div class="callout">
+            This is expected. The /mcp endpoint is not a normal website or REST API endpoint. It is meant to be used by an MCP-compatible client.
+          </div>
+        </section>
+
+        <section class="section" id="connect-vscode">
+          <h2>7. Connect the MCP server to VS Code</h2>
+          <p>In your project, create this file:</p>
+          <div class="code-block">
+            <div class="code-block-header">File path</div>
+            <pre><code>.vscode/mcp.json</code></pre>
+          </div>
+          <p>Add the following configuration:</p>
+          <div class="code-block">
+            <div class="code-block-header">JSON</div>
+            <pre><code>{
+  "servers": {
+    "rabobank-demo": {
+      "url": "http://127.0.0.1:8000/mcp"
+    }
+  }
+}</code></pre>
+          </div>
+          <p>Save the file.</p>
+        </section>
+
+        <section class="section" id="start-vscode">
+          <h2>8. Start the MCP server in VS Code</h2>
+          <p>Make sure your HTTP MCP server is still running in the terminal.</p>
+          <p>Then open <code>.vscode/mcp.json</code>.</p>
+          <p>In VS Code, use the available MCP controls to start or detect the server.</p>
+          <p>After the server is detected, GitHub Copilot Chat can use the MCP tool.</p>
+        </section>
+
+        <section class="section" id="use-tool">
+          <h2>9. Use the MCP tool in GitHub Copilot Chat</h2>
+          <p>Open GitHub Copilot Chat in VS Code.</p>
+          <p>Switch to:</p>
+          <div class="code-block">
+            <div class="code-block-header">Mode</div>
+            <pre><code>Agent mode</code></pre>
+          </div>
+          <p>Use a prompt like:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the rabobank-demo MCP server to get the account balance for NL91RABO0123456789.</code></pre>
+          </div>
+          <p>Copilot should discover and call the MCP tool:</p>
+          <div class="code-block">
+            <div class="code-block-header">Tool</div>
+            <pre><code>get_account_balance</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="demo-talk">
+          <h2>10. What to explain during the demo</h2>
+          <p>You can explain it like this:</p>
+          <div class="code-block">
+            <div class="code-block-header">Demo script</div>
+            <pre><code>This is a minimal internal MCP server.
+It exposes one approved tool to an AI client.
+The AI assistant cannot directly access internal systems.
+It can only call the tools that the MCP server exposes.
+In this example, the approved tool is get_account_balance.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="summary">
+          <h2>Summary</h2>
+          <p>The main command flow is:</p>
+          <div class="card-grid">
+            <div class="info-card">
+              <strong>Project setup</strong>
+              <code>uv init first-mcp-server</code>
+            </div>
+            <div class="info-card">
+              <strong>Dependency install</strong>
+              <code>uv add fastmcp</code>
+            </div>
+            <div class="info-card">
+              <strong>Run server</strong>
+              <code>uv run fastmcp run main.py:mcp --transport http --port 8000</code>
+            </div>
+            <div class="info-card">
+              <strong>VS Code config</strong>
+              <code>.vscode/mcp.json</code>
+            </div>
+          </div>
+
+          <p class="footer-note">Key learning point: an MCP server is not the AI assistant itself. It exposes approved tools that an AI client can call.</p>
+        </section>
+      </article>
+    </div>
+  </main>
+</body>
+</html>

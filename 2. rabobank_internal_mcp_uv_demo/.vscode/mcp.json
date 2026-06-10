@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "internal-banking-mcp-demo": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "bank-mcp"],
+      "env": {
+        "INTERNAL_API_BASE_URL": "http://127.0.0.1:8000",
+        "DEMO_API_KEY": "training-demo-key"
+      }
+    }
+  }
+}
