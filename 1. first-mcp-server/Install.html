@@ -367,7 +367,7 @@
         <h2>Contents</h2>
         <p>Jump to the setup steps, the code, and the demo notes.</p>
         <nav>
-          <a href="#install-uv">1. Install uv on Windows</a>
+          <a href="#install-uv">1. Install uv on Windows or macOS</a>
           <a href="#create-project">2. Create a new MCP project</a>
           <a href="#add-fastmcp">3. Add FastMCP</a>
           <a href="#server">4. Create the minimal MCP server</a>
@@ -383,8 +383,8 @@
 
       <article class="content-card">
         <section class="section" id="install-uv">
-          <h2>1. Install uv on Windows</h2>
-          <p>Open PowerShell and run:</p>
+          <h2>1. Install uv on Windows or macOS</h2>
+          <p>On Windows, open PowerShell and run:</p>
           <div class="code-block">
             <div class="code-block-header">PowerShell</div>
             <pre><code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code></pre>
@@ -397,6 +397,27 @@
           <p>Optional: install Python through uv:</p>
           <div class="code-block">
             <div class="code-block-header">PowerShell</div>
+            <pre><code>uv python install 3.12</code></pre>
+          </div>
+          <p>On macOS, you can install uv with Homebrew or the official install script.</p>
+          <p>Homebrew:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
+            <pre><code>brew install uv</code></pre>
+          </div>
+          <p>Official install script:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
+            <pre><code>curl -LsSf https://astral.sh/uv/install.sh | sh</code></pre>
+          </div>
+          <p>Restart your terminal and verify the installation:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
+            <pre><code>uv --version</code></pre>
+          </div>
+          <p>Optional: install Python through uv:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
             <pre><code>uv python install 3.12</code></pre>
           </div>
         </section>

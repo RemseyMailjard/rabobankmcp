@@ -12,9 +12,9 @@ The goal is to build the smallest possible working example:
 
 ---
 
-## 1. Install `uv` on Windows
+## 1. Install `uv` on Windows or macOS
 
-Open PowerShell and run:
+On Windows, open PowerShell and run:
 
 ```powershell
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
@@ -29,6 +29,32 @@ uv --version
 Optional: install Python through `uv`:
 
 ```powershell
+uv python install 3.12
+```
+
+On macOS, you can install `uv` with Homebrew or the official install script.
+
+Homebrew:
+
+```bash
+brew install uv
+```
+
+Official install script:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Restart your terminal and verify the installation:
+
+```bash
+uv --version
+```
+
+Optional: install Python through `uv`:
+
+```bash
 uv python install 3.12
 ```
 
