@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup Lab: Run the Internal MCP Demo with uv</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4efe6;
+      --panel: #fffaf3;
+      --panel-strong: #ffffff;
+      --text: #1f2328;
+      --muted: #5f6770;
+      --accent: #0f6b5f;
+      --accent-2: #a1551f;
+      --border: #e5d9c8;
+      --code-bg: #1e1f22;
+      --code-text: #f3f4f6;
+      --shadow: 0 18px 60px rgba(77, 55, 30, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 107, 95, 0.12), transparent 32%),
+        radial-gradient(circle at top right, rgba(161, 85, 31, 0.10), transparent 30%),
+        linear-gradient(180deg, #f8f4ec 0%, var(--bg) 100%);
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(15, 107, 95, 0.10), rgba(161, 85, 31, 0.08));
+      border: 1px solid rgba(229, 217, 200, 0.85);
+      border-radius: 28px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -70px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(15, 107, 95, 0.18), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.2;
+      margin: 0 0 12px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 3.5vw, 3.4rem);
+      max-width: 12ch;
+    }
+
+    .lead {
+      max-width: 72ch;
+      font-size: 1.05rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 22px;
+      margin-top: 22px;
+    }
+
+    .card {
+      background: rgba(255, 250, 243, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+    }
+
+    .meta-list, .bullet-list, .steps {
+      padding-left: 18px;
+      margin: 0;
+    }
+
+    .meta-list li, .bullet-list li, .steps li {
+      margin-bottom: 10px;
+    }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .steps li {
+      position: relative;
+      padding-left: 46px;
+      margin-bottom: 18px;
+    }
+
+    .steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .section {
+      margin-top: 22px;
+    }
+
+    .section p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent-2);
+      background: #fff5e8;
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin: 14px 0 0;
+      color: #57412f;
+    }
+
+    .codeblock {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 18px 20px;
+      border-radius: 18px;
+      overflow-x: auto;
+      margin: 12px 0 0;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    pre {
+      margin: 0;
+      font-family: Consolas, "Cascadia Mono", "SFMono-Regular", monospace;
+      font-size: 0.93rem;
+      white-space: pre-wrap;
+    }
+
+    code {
+      font-family: Consolas, "Cascadia Mono", "SFMono-Regular", monospace;
+      font-size: 0.95em;
+    }
+
+    .inline-code {
+      background: rgba(15, 107, 95, 0.08);
+      color: var(--accent);
+      padding: 0.12rem 0.35rem;
+      border-radius: 6px;
+      border: 1px solid rgba(15, 107, 95, 0.12);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .resource {
+      background: linear-gradient(180deg, rgba(15, 107, 95, 0.08), rgba(255, 255, 255, 0.92));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .resource h3 {
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+    }
+
+    .checklist {
+      columns: 2;
+      column-gap: 28px;
+      padding-left: 18px;
+      margin: 0;
+    }
+
+    .checklist li {
+      margin-bottom: 8px;
+      break-inside: avoid;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    .footer-note {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    @media (max-width: 860px) {
+      .grid, .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .checklist {
+        columns: 1;
+      }
+
+      .hero {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Setup Lab</div>
+      <h1>Run the Internal MCP Demo with uv</h1>
+      <p class="lead">
+        This lab shows how to set up the demo, start the internal API, start the MCP server,
+        and use a sample Copilot prompt against the server.
+      </p>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Goal</h2>
+        <ul class="meta-list">
+          <li>Install <span class="inline-code">uv</span></li>
+          <li>Sync the project dependencies</li>
+          <li>Start the internal FastAPI service</li>
+          <li>Start the MCP server with <span class="inline-code">uv</span></li>
+          <li>Use example prompts to exercise the MCP server</li>
+        </ul>
+
+        <div class="section">
+          <h2>Prerequisites</h2>
+          <ul class="bullet-list">
+            <li>Windows, macOS, or Linux</li>
+            <li>Python 3.11 or later</li>
+            <li><span class="inline-code">uv</span> installed and available on your PATH</li>
+          </ul>
+          <p>Check <span class="inline-code">uv</span> first:</p>
+          <div class="codeblock"><pre>uv --version</pre></div>
+          <p>If you do not have <span class="inline-code">uv</span>, install it on Windows with:</p>
+          <div class="codeblock"><pre>winget install astral-sh.uv</pre></div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2>Quick Run</h2>
+        <ol class="steps">
+          <li>
+            <strong>Install dependencies</strong>
+            <div class="codeblock"><pre>uv sync</pre></div>
+          </li>
+          <li>
+            <strong>Run the internal API</strong>
+            <div class="codeblock"><pre>uv run bank-api</pre></div>
+          </li>
+          <li>
+            <strong>Run the MCP server</strong>
+            <div class="codeblock"><pre>uv run bank-mcp</pre></div>
+          </li>
+        </ol>
+      </aside>
+    </div>
+
+    <section class="card section">
+      <h2>Step 1: Install dependencies</h2>
+      <p>From the project folder, run:</p>
+      <div class="codeblock"><pre>uv sync</pre></div>
+      <p>This creates the virtual environment and installs the project dependencies from <span class="inline-code">pyproject.toml</span>.</p>
+    </section>
+
+    <section class="card section">
+      <h2>Step 2: Start the internal API</h2>
+      <p>Open a terminal in the project folder and run:</p>
+      <div class="codeblock"><pre>uv run bank-api</pre></div>
+      <p>Leave that terminal running. The API should be available at:</p>
+      <div class="codeblock"><pre>http://127.0.0.1:8000</pre></div>
+      <p>You can verify it in a browser with:</p>
+      <div class="codeblock"><pre>http://127.0.0.1:8000/docs</pre></div>
+      <p>Most endpoints require the demo API key:</p>
+      <div class="codeblock"><pre>curl -H "x-api-key: training-demo-key" http://127.0.0.1:8000/customers/CUST-1001</pre></div>
+      <p>PowerShell alternative:</p>
+      <div class="codeblock"><pre>$Headers = @{ "x-api-key" = "training-demo-key" }
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/customers/CUST-1001" -Headers $Headers</pre></div>
+    </section>
+
+    <section class="card section">
+      <h2>Step 3: Start the MCP server</h2>
+      <p>Open a second terminal in the same project folder and run:</p>
+      <div class="codeblock"><pre>uv run bank-mcp</pre></div>
+      <p>The MCP server uses stdio transport, so it may look idle. That is expected.</p>
+    </section>
+
+    <section class="card section">
+      <h2>Step 4: Use an example prompt</h2>
+      <div class="two-col">
+        <div class="resource">
+          <h3>Customer prompt</h3>
+          <p>Use this prompt in GitHub Copilot Chat or any MCP-enabled client connected to the demo:</p>
+          <div class="codeblock"><pre>Use the internal MCP server to retrieve customer CUST-1001 and summarize the active products.</pre></div>
+        </div>
+        <div class="resource">
+          <h3>Product prompt</h3>
+          <p>Use this prompt if you want a product-focused example:</p>
+          <div class="codeblock"><pre>Use the internal MCP server to explain product MORTGAGE-FLEX for a developer who needs to call the product API.</pre></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2>Extend the MCP server</h2>
+      <p>Developers can add new functionality by editing <span class="inline-code">app/mcp_server.py</span> and restarting the server with <span class="inline-code">uv run bank-mcp</span>.</p>
+      <div class="two-col">
+        <div class="resource">
+          <h3>Add a new tool</h3>
+          <p>Use <span class="inline-code">@mcp.tool</span> for actions that return structured data.</p>
+          <div class="codeblock"><pre>@mcp.tool
+def get_account_balance(account_id: str) -> dict[str, Any]:
+    """Return a demo account balance by account ID."""
+    return internal_get(f"/accounts/{account_id}")</pre></div>
+        </div>
+        <div class="resource">
+          <h3>Add a calculation tool</h3>
+          <p>Use a calculation tool when the server should compute something for the assistant.</p>
+          <div class="codeblock"><pre>@mcp.tool
+def calculate_monthly_payment(principal: float, annual_rate: float, months: int) -> dict[str, float]:
+    """Calculate a simple monthly payment estimate for a loan."""
+    monthly_rate = annual_rate / 12 / 100
+    payment = principal * monthly_rate / (1 - (1 + monthly_rate) ** (-months))
+    return {
+        "principal": principal,
+        "annual_rate": annual_rate,
+        "months": months,
+        "estimated_monthly_payment": round(payment, 2),
+    }</pre></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="resource">
+          <h3>Add a resource</h3>
+          <p>Use <span class="inline-code">@mcp.resource</span> for read-only content that Copilot can inspect.</p>
+          <div class="codeblock"><pre>@mcp.resource("policy://customer-data-handling")
+def customer_data_handling_policy() -> str:
+    """Return a short customer data handling policy for the demo."""
+    result = internal_get("/policies/customer-data-handling")
+    return result["content"]</pre></div>
+        </div>
+        <div class="resource">
+          <h3>Add a reusable prompt</h3>
+          <p>Use <span class="inline-code">@mcp.prompt</span> for reusable prompt templates.</p>
+          <div class="codeblock"><pre>@mcp.prompt
+def customer_onboarding_review_prompt(customer_id: str) -> str:
+    """Reusable prompt for checking a customer onboarding case."""
+    return f"""
+You are reviewing customer onboarding for customer ID: {customer_id}
+
+Use the available MCP tools and resources to:
+1. Summarize the current onboarding state
+2. Identify missing data or risks
+3. Suggest the next operational step
+""".strip()</pre></div>
+        </div>
+      </div>
+
+      <div class="callout">
+        After adding a tool, resource, calculation, or prompt: save the changes, restart <span class="inline-code">uv run bank-mcp</span>, call the new capability from Copilot Chat, and update the lab or README with a short example if the feature should be discoverable.
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2>Expected result</h2>
+      <p>If everything is working, the MCP server should respond with data from the demo API and summarize it in plain language.</p>
+    </section>
+
+    <section class="card section">
+      <h2>Quick checklist</h2>
+      <ul class="checklist">
+        <li><span class="inline-code">uv --version</span> works</li>
+        <li><span class="inline-code">uv sync</span> completes successfully</li>
+        <li><span class="inline-code">uv run bank-api</span> is running in one terminal</li>
+        <li><span class="inline-code">uv run bank-mcp</span> is running in a second terminal</li>
+        <li>A Copilot prompt can call the MCP server and return demo data</li>
+      </ul>
+      <p class="footer-note">
+        Markdown version: <a href="SETUP_LAB.md">SETUP_LAB.md</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

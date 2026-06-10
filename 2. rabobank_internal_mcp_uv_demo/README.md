@@ -99,6 +99,7 @@ For a guided walkthrough, see [SETUP_LAB.md](SETUP_LAB.md).
 
 This repository also contains HTML training material:
 
+- `SETUP_LAB.html` - HTML version of the setup lab for developers
 - `index.html` - self-study guide for MCP and Rabobank Design System context
 - `mcp-extension-lab.html` - hands-on developer lab for extending this MCP server
 - `mcp-extension-trainer-answer-key.html` - trainer guide with expected solution and demo flow
