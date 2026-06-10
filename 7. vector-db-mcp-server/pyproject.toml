@@ -1,0 +1,15 @@
+[project]
+name = "vector-db-mcp-server"
+version = "0.1.0"
+description = "Demo MCP server that exposes a tiny in-memory vector store for semantic document search."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp>=2.0.0",
+]
+
+[project.scripts]
+vector-mcp = "main:main"
+
+[tool.uv]
+package = false

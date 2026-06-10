@@ -28,6 +28,10 @@ The dummy IT helpdesk API used by the assignment in `PROJECT-ASSIGNMENT.md`.
 
 A demo MCP server that returns ready-to-use UI components as HTML, CSS, and JavaScript snippets.
 
+### `7. vector-db-mcp-server/`
+
+A demo MCP server that uses a tiny in-memory vector store to search and manage documents by semantic similarity.
+
 ## How The Structure Evolved
 
 The examples move from a minimal MCP proof of concept to a plain Python internal demo, then to a more maintainable `uv`-based training project.
