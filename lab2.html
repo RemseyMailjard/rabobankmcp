@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internal MCP Server Demo and Setup Lab with uv, FastAPI and FastMCP</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4efe6;
+      --bg-soft: #fbf8f2;
+      --surface: rgba(255, 255, 255, 0.78);
+      --surface-strong: #ffffff;
+      --text: #132238;
+      --muted: #5b6677;
+      --accent: #0f4c81;
+      --accent-2: #b85c38;
+      --border: rgba(19, 34, 56, 0.12);
+      --shadow: 0 18px 50px rgba(19, 34, 56, 0.12);
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --chip-bg: rgba(15, 76, 129, 0.1);
+      --chip-text: #0f4c81;
+      --max-width: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 76, 129, 0.12), transparent 34%),
+        radial-gradient(circle at right 10%, rgba(184, 92, 56, 0.10), transparent 30%),
+        linear-gradient(180deg, #f8f2e8 0%, #f4efe6 55%, #efe7da 100%);
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 0.18em;
+    }
+
+    .page-shell {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.72));
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -120px -120px auto;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(15, 76, 129, 0.18), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--chip-bg);
+      color: var(--chip-text);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.15;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 4vw, 4rem);
+      margin-top: 18px;
+      max-width: 14ch;
+    }
+
+    .hero p {
+      max-width: 70ch;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .meta-card {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      min-width: 180px;
+      backdrop-filter: blur(8px);
+    }
+
+    .meta-card span {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .meta-card strong {
+      font-size: 1rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .toc,
+    .content-card {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .toc {
+      position: sticky;
+      top: 18px;
+      border-radius: 22px;
+      padding: 22px;
+    }
+
+    .toc h2 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+    }
+
+    .toc p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .toc nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .toc a {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid transparent;
+    }
+
+    .toc a:hover,
+    .toc a:focus-visible {
+      border-color: rgba(15, 76, 129, 0.22);
+      background: #fff;
+    }
+
+    .content-card {
+      border-radius: 28px;
+      padding: 30px;
+    }
+
+    .section {
+      padding: 24px 0;
+      border-top: 1px solid rgba(19, 34, 56, 0.08);
+      scroll-margin-top: 24px;
+    }
+
+    .section:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .section h2 {
+      font-size: clamp(1.55rem, 2vw, 2.25rem);
+      margin-bottom: 10px;
+    }
+
+    .section h3 {
+      font-size: 1.15rem;
+      margin-top: 18px;
+      margin-bottom: 10px;
+    }
+
+    .section p {
+      margin: 10px 0;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .info-card {
+      border: 1px solid rgba(15, 76, 129, 0.12);
+      background: linear-gradient(180deg, #fff, rgba(255, 255, 255, 0.82));
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .info-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    ul,
+    ol {
+      margin: 12px 0 12px 22px;
+      padding: 0;
+    }
+
+    li+li {
+      margin-top: 6px;
+    }
+
+    .code-block {
+      margin: 14px 0;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 23, 42, 0.16);
+      background: var(--code-bg);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    .code-block-header {
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(226, 232, 240, 0.78);
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px 18px 18px;
+      overflow-x: auto;
+      color: var(--code-text);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    code {
+      font-family: Consolas, "SFMono-Regular", Menlo, Monaco, monospace;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent-2);
+      background: rgba(184, 92, 56, 0.08);
+      border-radius: 0 16px 16px 0;
+      padding: 14px 16px;
+      margin: 14px 0;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .toc {
+        position: static;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell {
+        padding: 18px 12px 36px;
+      }
+
+      .hero,
+      .content-card,
+      .toc {
+        border-radius: 20px;
+        padding: 20px;
+      }
+
+      .hero-meta {
+        flex-direction: column;
+      }
+
+      .meta-card {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page-shell">
+    <section class="hero" aria-labelledby="page-title">
+      <span class="eyebrow">MCP demo guide + lab</span>
+      <h1 id="page-title">Internal MCP Server Demo and Setup Lab with uv, FastAPI and FastMCP</h1>
+      <p>This combined guide explains the internal MCP demo, shows how to run it with uv, and continues into a lab for
+        extending the server with new tools, resources, and prompts.</p>
+
+      <div class="hero-meta">
+        <div class="meta-card">
+          <span>Project</span>
+          <strong>rabobank_internal_mcp_uv_demo</strong>
+        </div>
+        <div class="meta-card">
+          <span>Runtime</span>
+          <strong>Python + uv + FastMCP</strong>
+        </div>
+        <div class="meta-card">
+          <span>Demo outcome</span>
+          <strong>Internal API through MCP</strong>
+        </div>
+        <div class="meta-card">
+          <span>Lab outcome</span>
+          <strong>Extend tools, resources, prompts</strong>
+        </div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <aside class="toc" aria-label="Table of contents">
+        <h2>Contents</h2>
+        <p>Start with the project overview, then run the demo, then extend it.</p>
+        <nav>
+          <a href="#overview">Project overview</a>
+          <a href="#learning-goal">Learning goal</a>
+          <a href="#scenario">Scenario</a>
+          <a href="#structure">Project structure</a>
+          <a href="#tools">Available MCP tools</a>
+          <a href="#resources">Available MCP resources</a>
+          <a href="#prompt">Available MCP prompt</a>
+          <a href="#prerequisite-uv">Prerequisite: uv</a>
+          <a href="#step-1">Step 1. Install dependencies</a>
+          <a href="#step-2">Step 2. Start the internal API</a>
+          <a href="#step-3">Step 3. Start the MCP server</a>
+          <a href="#step-4">Step 4. Connect in Visual Studio Code</a>
+          <a href="#step-5">Step 5. Use example prompts</a>
+          <a href="#expected-result">Expected result</a>
+          <a href="#extend">Extend the MCP server</a>
+          <a href="#trainer-flow">Trainer flow for 1 hour</a>
+          <a href="#security">Security discussion points</a>
+          <a href="#troubleshooting">Troubleshooting</a>
+          <a href="#checklist">Quick checklist</a>
+        </nav>
+      </aside>
+
+      <article class="content-card">
+        <section class="section" id="overview">
+          <h2>Project overview</h2>
+          <p>This demo is a minimal but realistic training project for a 1-hour MCP session with developers.</p>
+          <p>It demonstrates how GitHub Copilot in Visual Studio Code can use an internal MCP server to safely access
+            approved internal APIs, documentation, and review prompts.</p>
+          <p>All data is fictional. No real Rabobank data is included.</p>
+        </section>
+
+        <section class="section" id="learning-goal">
+          <h2>Learning goal</h2>
+          <p>Developers learn that an MCP server can act as a controlled AI-facing layer over internal systems.</p>
+          <div class="code-block">
+            <div class="code-block-header">Architecture view</div>
+            <pre><code>GitHub Copilot in VS Code
+          |
+          v
+      MCP Client
+          |
+          v
+ Internal MCP Server
+          |
+ +--------+--------+-------------+
+ |        |        |             |
+ v        v        v             v
+Internal  API      Policies      Architecture
+API       Catalog  / Standards   Checks</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="scenario">
+          <h2>Scenario</h2>
+          <p>A developer wants to explore internal banking APIs and standards without manually searching documentation.
+          </p>
+          <p>The MCP server exposes selected tools, resources, and prompts for that scenario.</p>
+        </section>
+
+        <section class="section" id="structure">
+          <h2>Project structure</h2>
+          <div class="code-block">
+            <div class="code-block-header">Project tree</div>
+            <pre><code>rabobank_internal_mcp_uv_demo/
+|- app/
+|  |- data.py
+|  |- internal_api.py
+|  |- mcp_server.py
+|  |- run_api.py
+|  \- __init__.py
+|- .vscode/
+|  |- mcp.json
+|  \- tasks.json
+|- scripts/
+|  |- demo-calls.ps1
+|  \- demo-calls.sh
+|- .env.example
+|- .python-version
+|- pyproject.toml
+|- uv.lock
+\- SETUP_LAB.md</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="tools">
+          <h2>Available MCP tools</h2>
+          <h3><code>get_customer_profile(customer_id)</code></h3>
+          <p>Example IDs: <code>CUST-1001</code>, <code>CUST-2002</code>.</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the internal MCP server to retrieve customer CUST-1001 and summarize the active products.</code></pre>
+          </div>
+
+          <h3><code>get_product_info(product_id)</code></h3>
+          <p>Example IDs: <code>MORTGAGE-FLEX</code>, <code>PAYMENT-PLUS</code>, <code>BUSINESS-ACCOUNT</code>.</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the internal MCP server to explain product MORTGAGE-FLEX for a developer who needs to call the product API.</code></pre>
+          </div>
+
+          <h3><code>get_api_endpoint_info(api_name)</code></h3>
+          <p>Example API names: <code>customer-onboarding</code>, <code>product-catalog</code>.</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the internal MCP server to inspect the customer-onboarding API and tell me which endpoint creates a new onboarding case.</code></pre>
+          </div>
+
+          <h3><code>run_architecture_check(service_name)</code></h3>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Run an architecture check for CustomerOnboardingService and summarize the findings as action items.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="resources">
+          <h2>Available MCP resources</h2>
+          <h3><code>policy://api-security</code></h3>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the policy://api-security resource and summarize the security requirements for internal APIs.</code></pre>
+          </div>
+
+          <h3><code>architecture://event-driven-standards</code></h3>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the architecture://event-driven-standards resource and explain what every event must contain.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="prompt">
+          <h2>Available MCP prompt</h2>
+          <h3><code>api_security_review_prompt(api_name, endpoint)</code></h3>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the api_security_review_prompt for the customer-onboarding API and endpoint /onboarding/cases.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="prerequisite-uv">
+          <h2>Prerequisite: uv</h2>
+          <p>Check if <code>uv</code> is available:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
+            <pre><code>uv --version</code></pre>
+          </div>
+          <p>Install <code>uv</code> on Windows:</p>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>winget install astral-sh.uv</code></pre>
+          </div>
+          <p>Alternative Windows install:</p>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code></pre>
+          </div>
+          <p>macOS/Linux:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
+            <pre><code>curl -LsSf https://astral.sh/uv/install.sh | sh</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="step-1">
+          <h2>Step 1. Install dependencies</h2>
+          <p>From the project folder, run:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
+            <pre><code>uv sync</code></pre>
+          </div>
+          <p class="muted">This creates the virtual environment and installs the project dependencies from
+            <code>pyproject.toml</code>.</p>
+        </section>
+
+        <section class="section" id="step-2">
+          <h2>Step 2. Start the internal API</h2>
+          <p>Open a terminal in the project folder and run:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
+            <pre><code>uv run bank-api</code></pre>
+          </div>
+          <p>Leave that terminal running. The API should be available at:</p>
+          <div class="code-block">
+            <div class="code-block-header">URL</div>
+            <pre><code>http://127.0.0.1:8000</code></pre>
+          </div>
+          <p>You can verify it in a browser with:</p>
+          <div class="code-block">
+            <div class="code-block-header">URL</div>
+            <pre><code>http://127.0.0.1:8000/docs</code></pre>
+          </div>
+          <p>Test the health endpoint:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
+            <pre><code>curl http://127.0.0.1:8000/health</code></pre>
+          </div>
+          <p>Most endpoints require the demo API key:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
+            <pre><code>curl -H "x-api-key: training-demo-key" http://127.0.0.1:8000/customers/CUST-1001</code></pre>
+          </div>
+          <p>PowerShell alternative:</p>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>$Headers = @{ "x-api-key" = "training-demo-key" }
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/customers/CUST-1001" -Headers $Headers</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="step-3">
+          <h2>Step 3. Start the MCP server</h2>
+          <p>Normally VS Code starts the MCP server using <code>.vscode/mcp.json</code>.</p>
+          <p>For a manual smoke test, open a second terminal in the same project folder and run:</p>
+          <div class="code-block">
+            <div class="code-block-header">Terminal</div>
+            <pre><code>uv run bank-mcp</code></pre>
+          </div>
+          <p>The MCP server uses stdio transport, so it may look idle. That is expected.</p>
+        </section>
+
+        <section class="section" id="step-4">
+          <h2>Step 4. Connect in Visual Studio Code</h2>
+          <p>The example config is in:</p>
+          <div class="code-block">
+            <div class="code-block-header">File path</div>
+            <pre><code>.vscode/mcp.json</code></pre>
+          </div>
+          <p>It starts the MCP server with:</p>
+          <div class="code-block">
+            <div class="code-block-header">Command</div>
+            <pre><code>uv run bank-mcp</code></pre>
+          </div>
+          <div class="callout">Keep the internal API running in the first terminal while VS Code connects to the MCP
+            server.</div>
+        </section>
+
+        <section class="section" id="step-5">
+          <h2>Step 5. Use example prompts</h2>
+          <h3>Customer prompt</h3>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the internal MCP server to retrieve customer CUST-1001 and summarize the active products.</code></pre>
+          </div>
+
+          <h3>Product prompt</h3>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the internal MCP server to explain product MORTGAGE-FLEX for a developer who needs to call the product API.</code></pre>
+          </div>
+
+          <h3>API prompt</h3>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the internal MCP server to inspect the customer-onboarding API and tell me which endpoint creates a new onboarding case.</code></pre>
+          </div>
+
+          <h3>Resource prompt</h3>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the policy://api-security resource and review the customer-onboarding /onboarding/cases endpoint.</code></pre>
+          </div>
+
+          <h3>Architecture prompt</h3>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Run an architecture check for CustomerOnboardingService and summarize the risks.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="expected-result">
+          <h2>Expected result</h2>
+          <p>If everything is working, the MCP server should respond with data from the demo API and summarize it in
+            plain language.</p>
+        </section>
+
+        <section class="section" id="extend">
+          <h2>Extend the MCP server</h2>
+          <p>Developers can add new functionality by editing <code>app/mcp_server.py</code> and restarting the server
+            with <code>uv run bank-mcp</code>.</p>
+          <p>Use the same patterns already in the demo:</p>
+          <ul>
+            <li><code>@mcp.tool</code> for actions that return structured data</li>
+            <li><code>@mcp.resource</code> for read-only content that Copilot can inspect</li>
+            <li><code>@mcp.prompt</code> for reusable prompt templates</li>
+          </ul>
+
+          <h3>1. Add a new tool</h3>
+          <p>Use a tool when Copilot needs to fetch or change data.</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.tool
+def get_account_balance(account_id: str) -&gt; dict[str, Any]:
+    """Return a demo account balance by account ID."""
+    return internal_get(f"/accounts/{account_id}")</code></pre>
+          </div>
+          <ul>
+            <li>Keep the function name clear and action-focused.</li>
+            <li>Add a docstring with example inputs.</li>
+            <li>Return JSON-serializable data.</li>
+            <li>Prefer calling the internal API through <code>internal_get()</code> or <code>internal_post()</code>.
+            </li>
+          </ul>
+
+          <h3>2. Add a calculation tool</h3>
+          <p>Use a calculation tool when the server should compute something for the assistant instead of leaving the
+            math in the prompt.</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.tool
+def calculate_monthly_payment(principal: float, annual_rate: float, months: int) -&gt; dict[str, float]:
+    """Calculate a simple monthly payment estimate for a loan."""
+    monthly_rate = annual_rate / 12 / 100
+    payment = principal * monthly_rate / (1 - (1 + monthly_rate) ** (-months))
+    return {
+        "principal": principal,
+        "annual_rate": annual_rate,
+        "months": months,
+        "estimated_monthly_payment": round(payment, 2),
+    }</code></pre>
+          </div>
+          <ul>
+            <li>Use calculations for repeatable business logic, not prompt-only explanations.</li>
+            <li>Return both the inputs and the computed result when helpful.</li>
+            <li>Keep the logic deterministic.</li>
+          </ul>
+
+          <h3>3. Add a resource</h3>
+          <p>Use a resource for policy text, reference content, or other read-only material that Copilot may want to
+            inspect during a task.</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.resource("policy://customer-data-handling")
+def customer_data_handling_policy() -&gt; str:
+    """Return a short customer data handling policy for the demo."""
+    result = internal_get("/policies/customer-data-handling")
+    return result["content"]</code></pre>
+          </div>
+          <ul>
+            <li>Use a stable URI-like name.</li>
+            <li>Return a string for text content or structured data only when intended.</li>
+            <li>Keep resources read-only.</li>
+          </ul>
+
+          <h3>4. Add a reusable prompt</h3>
+          <p>Use a prompt when you want a standard review template or workflow that Copilot can invoke repeatedly.</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.prompt
+def customer_onboarding_review_prompt(customer_id: str) -&gt; str:
+    """Reusable prompt for checking a customer onboarding case."""
+    return f"""
+You are reviewing customer onboarding for customer ID: {customer_id}
+
+Use the available MCP tools and resources to:
+1. Summarize the current onboarding state
+2. Identify missing data or risks
+3. Suggest the next operational step
+""".strip()</code></pre>
+          </div>
+          <ul>
+            <li>Keep prompts reusable and parameter-driven.</li>
+            <li>Describe the expected output clearly.</li>
+            <li>Reference the relevant resources or tools in the prompt body.</li>
+          </ul>
+
+          <h3>5. Test the new functionality</h3>
+          <ol>
+            <li>Save the changes in <code>app/mcp_server.py</code>.</li>
+            <li>Restart the MCP server with <code>uv run bank-mcp</code>.</li>
+            <li>Call the new tool or prompt from Copilot Chat.</li>
+            <li>Update the lab with a short example if the new capability should be discoverable.</li>
+          </ol>
+          <div class="code-block">
+            <div class="code-block-header">Validation prompt</div>
+            <pre><code>Use the new calculation tool to estimate a monthly payment for a loan with principal 250000, annual rate 4.5, and 360 months.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="trainer-flow">
+          <h2>Trainer flow for 1 hour</h2>
+          <h3>0-10 min. Explain MCP</h3>
+          <p>MCP is a standard way to let AI clients use tools, resources, and prompts from approved systems.</p>
+
+          <h3>10-20 min. Show the internal API</h3>
+          <p>Open:</p>
+          <div class="code-block">
+            <div class="code-block-header">URL</div>
+            <pre><code>http://127.0.0.1:8000/docs</code></pre>
+          </div>
+          <p>Show that it represents internal systems:</p>
+          <ul>
+            <li>Customer API</li>
+            <li>Product API</li>
+            <li>API catalog</li>
+            <li>Policies</li>
+            <li>Architecture check</li>
+          </ul>
+
+          <h3>20-35 min. Show the MCP server</h3>
+          <p>Open <code>app/mcp_server.py</code> and explain:</p>
+          <ul>
+            <li>Tools perform actions or retrieve specific data.</li>
+            <li>Resources expose readable knowledge.</li>
+            <li>Prompts standardize repeatable tasks.</li>
+          </ul>
+
+          <h3>35-50 min. Use GitHub Copilot in VS Code</h3>
+          <p>Run the demo prompts from this guide.</p>
+
+          <h3>50-60 min. Extension exercise</h3>
+          <p>Ask participants to add one new tool:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.tool
+def list_customer_products(customer_id: str) -&gt; list[str]:
+    customer = internal_get(f"/customers/{customer_id}")
+    return customer["active_products"]</code></pre>
+          </div>
+          <p>Then ask Copilot:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the internal MCP server to list the active products for customer CUST-1001.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="security">
+          <h2>Security discussion points</h2>
+          <p>This demo intentionally uses fake data. In a real organization, discuss:</p>
+          <ul>
+            <li>Internal allowlist for MCP servers</li>
+            <li>Authentication and authorization</li>
+            <li>Least privilege</li>
+            <li>Audit logging</li>
+            <li>Correlation IDs</li>
+            <li>Output filtering</li>
+            <li>No direct production database access</li>
+            <li>API gateway usage</li>
+            <li>Data classification</li>
+            <li>Separate dev/test/prod environments</li>
+          </ul>
+        </section>
+
+        <section class="section" id="troubleshooting">
+          <h2>Troubleshooting</h2>
+          <h3><code>uv</code> is not recognized</h3>
+          <p>Restart the terminal after installing <code>uv</code>.</p>
+
+          <h3>API endpoint returns 401</h3>
+          <p>Add the demo API key header:</p>
+          <div class="code-block">
+            <div class="code-block-header">Header</div>
+            <pre><code>x-api-key: training-demo-key</code></pre>
+          </div>
+
+          <h3>MCP server seems stuck</h3>
+          <p>That is normal for stdio MCP servers. It waits for the MCP client.</p>
+
+          <h3>Port 8000 already in use</h3>
+          <p>Change the port in <code>app/run_api.py</code> or stop the other process.</p>
+        </section>
+
+        <section class="section" id="checklist">
+          <h2>Quick checklist</h2>
+          <ul>
+            <li><code>uv --version</code> works</li>
+            <li><code>uv sync</code> completes successfully</li>
+            <li><code>uv run bank-api</code> is running in one terminal</li>
+            <li><code>uv run bank-mcp</code> is running in a second terminal</li>
+            <li>A Copilot prompt can call the MCP server and return demo data</li>
+          </ul>
+          <p class="footer-note">Markdown version: <a href="SETUP_LAB.md">SETUP_LAB.md</a></p>
+        </section>
+      </article>
+    </div>
+  </main>
+</body>
+
+</html>
