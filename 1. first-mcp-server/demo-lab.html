@@ -349,8 +349,8 @@
     <section class="hero" aria-labelledby="page-title">
       <span class="eyebrow">MCP demo guide + lab</span>
       <h1 id="page-title">Minimal MCP Server Demo and Lab with uv, FastMCP and VS Code</h1>
-      <p>This combined guide starts with the minimal setup for a working MCP server and continues into a hands-on lab
-        where you extend that server with tools, resources, prompts, and simulated internal banking data.</p>
+      <p>This guide starts with the minimal setup for a working MCP server and then extends it step by step with tools,
+        resources, prompts, and simulated internal banking data.</p>
 
       <div class="hero-meta">
         <div class="meta-card">
@@ -362,11 +362,11 @@
           <strong>Python + uv</strong>
         </div>
         <div class="meta-card">
-          <span>Demo outcome</span>
-          <strong>One approved MCP tool</strong>
+          <span>Start point</span>
+          <strong>One working MCP tool</strong>
         </div>
         <div class="meta-card">
-          <span>Lab outcome</span>
+          <span>End result</span>
           <strong>Extended MCP server capabilities</strong>
         </div>
       </div>
@@ -388,7 +388,7 @@
           <a href="#use-tool">9. Use the MCP tool</a>
           <a href="#demo-talk">10. What to explain during the demo</a>
           <a href="#summary">Part 1 Summary</a>
-          <a href="#lab-goal">Lab Goal</a>
+          <a href="#lab-goal">What You Will Build</a>
           <a href="#lab-0">Lab 0. Project Setup</a>
           <a href="#lab-1">Lab 1. Connect to VS Code</a>
           <a href="#lab-2">Lab 2. Simulated Internal Data</a>
@@ -398,7 +398,7 @@
           <a href="#lab-6">Lab 6. Resource</a>
           <a href="#lab-7">Lab 7. Prompt Template</a>
           <a href="#lab-8">Lab 8. Final Challenge</a>
-          <a href="#lab-checklist">Lab Checklist</a>
+          <a href="#lab-checklist">What To Complete</a>
           <a href="#lab-summary">Lab Summary</a>
         </nav>
       </aside>
@@ -628,9 +628,10 @@ In this example, the approved tool is get_account_balance.</code></pre>
         </section>
 
         <section class="section" id="lab-goal">
-          <h2>Lab Goal</h2>
-          <p>In this lab, you will build on the minimal MCP server and gradually extend it with extra capabilities.</p>
-          <p>You will learn how to expose:</p>
+          <h2>What You Will Build</h2>
+          <p>You start with a minimal MCP server and extend it into a server that can return richer internal banking
+            data and reusable MCP capabilities.</p>
+          <p>By the end, you should understand how to expose:</p>
           <div class="card-grid">
             <div class="info-card">
               <strong>Tools</strong>
@@ -649,7 +650,8 @@ In this example, the approved tool is get_account_balance.</code></pre>
               Basic checks and error handling.
             </div>
           </div>
-          <div class="callout">The example is based on a fictional internal banking scenario.</div>
+          <div class="callout">Use this lab to understand the difference between tools, resources, and prompts, and when
+            each is the right MCP surface.</div>
         </section>
 
         <section class="section" id="lab-0">
@@ -957,7 +959,7 @@ def detect_large_transactions(account_number: str, minimum_amount: float) -&gt; 
         </section>
 
         <section class="section" id="lab-checklist">
-          <h2>Lab Checklist</h2>
+          <h2>What To Complete</h2>
           <p>Your MCP server should now include:</p>
           <ul>
             <li>One MCP server</li>
@@ -994,10 +996,10 @@ def detect_large_transactions(account_number: str, minimum_amount: float) -&gt; 
             <pre><code>Use the account review prompt.</code></pre>
           </div>
 
-          <h3>Enterprise lesson</h3>
-          <p>An MCP server allows developers to expose internal functionality in a controlled way.</p>
-          <p>The AI assistant does not get unlimited access. It only gets access to the tools, resources and prompts
-            that the server provides.</p>
+          <h3>Key takeaway</h3>
+          <p>An MCP server exposes internal functionality in a controlled way.</p>
+          <p>The AI assistant does not get broad backend access. It can only use the tools, resources, and prompts that
+            the server provides.</p>
         </section>
       </article>
     </div>
