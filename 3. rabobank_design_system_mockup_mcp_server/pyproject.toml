@@ -1,7 +1,11 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
 [project]
-name = "design-styling-mcp-server"
+name = "design-styling-mcp"
 version = "0.1.0"
-description = "Demo MCP server that returns UI components as HTML, CSS, and JavaScript bundles."
+description = "MCP server that returns UI components as HTML, CSS, and JavaScript bundles."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -11,5 +15,5 @@ dependencies = [
 [project.scripts]
 design-mcp = "main:main"
 
-[tool.uv]
-package = false
+[tool.hatch.build.targets.wheel]
+only-include = ["main.py"]

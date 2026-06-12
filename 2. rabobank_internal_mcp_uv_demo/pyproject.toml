@@ -2,7 +2,7 @@
 name = "rabobank-internal-mcp-uv-demo"
 version = "0.1.0"
 description = "Minimal internal MCP server demo using uv, FastAPI and FastMCP. Contains fake banking data only."
-readme = "README.md"
+readme = "SETUP_LAB.md"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.0",
