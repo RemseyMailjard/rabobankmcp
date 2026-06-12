@@ -29,6 +29,12 @@ BRANCHES = {
     },
 }
 
+EXCHANGE_RATES = {
+    "USD": "1 USD = 0.92 EUR",
+    "GBP": "1 GBP = 1.17 EUR",
+    "CHF": "1 CHF = 1.04 EUR",
+}
+
 
 def _infer_tags(tool_name: str, description: str) -> list[str]:
     """Infer lightweight categories from tool metadata."""
@@ -201,6 +207,22 @@ def get_branch_information(branch_code: str) -> str:
         f"Opening Hours: {branch['opening_hours']}\n"
         f"Services: {services}"
     )
+
+
+@mcp.tool()
+def get_exchange_rate(currency: str) -> str:
+    """Get a demo exchange rate for a supported currency."""
+    normalized_currency = currency.upper()
+    exchange_rate = EXCHANGE_RATES.get(normalized_currency)
+
+    if exchange_rate is None:
+        supported = ", ".join(sorted(EXCHANGE_RATES))
+        return (
+            f"No exchange rate found for {normalized_currency}. "
+            f"Supported currencies: {supported}."
+        )
+
+    return exchange_rate
 
 
 @mcp.tool(name="discoverTools", tags={"meta", "discovery"})

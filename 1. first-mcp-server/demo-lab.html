@@ -850,7 +850,7 @@ Services: Daily banking, Mortgage advice, Business support</code></pre>
             <div class="code-block-header">JSON</div>
             <pre><code>{
   "servers": {
-    "internal-bank-demo": {
+    "rabobank-demo": {
       "url": "http://127.0.0.1:8000/mcp"
     }
   }
@@ -872,10 +872,29 @@ Show information about branch BR001.</code></pre>
 
         <section class="section" id="lab-challenge">
           <h2>Challenge Exercise</h2>
-          <p>Add a new tool:</p>
+          <p>Add a new tool that returns a demo exchange rate in EUR:</p>
           <div class="code-block">
             <div class="code-block-header">Python</div>
-            <pre><code>get_exchange_rate(currency)</code></pre>
+            <pre><code>EXCHANGE_RATES = {
+    "USD": "1 USD = 0.92 EUR",
+    "GBP": "1 GBP = 1.17 EUR",
+    "CHF": "1 CHF = 1.04 EUR",
+}
+
+
+@mcp.tool()
+def get_exchange_rate(currency: str) -&gt; str:
+    normalized_currency = currency.upper()
+    exchange_rate = EXCHANGE_RATES.get(normalized_currency)
+
+    if exchange_rate is None:
+        supported = ", ".join(sorted(EXCHANGE_RATES))
+        return (
+            f"No exchange rate found for {normalized_currency}. "
+            f"Supported currencies: {supported}."
+        )
+
+    return exchange_rate</code></pre>
           </div>
           <p>Examples:</p>
           <div class="code-block">
@@ -884,7 +903,16 @@ Show information about branch BR001.</code></pre>
 GBP -&gt; EUR
 CHF -&gt; EUR</code></pre>
           </div>
-          <p>Allow GitHub Copilot to retrieve exchange rates through the MCP server.</p>
+          <p>Test it with GitHub Copilot:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>What is the USD to EUR exchange rate?</code></pre>
+          </div>
+          <p>Expected output:</p>
+          <div class="code-block">
+            <div class="code-block-header">Example</div>
+            <pre><code>1 USD = 0.92 EUR</code></pre>
+          </div>
         </section>
 
         <section class="section" id="lab-checklist">
