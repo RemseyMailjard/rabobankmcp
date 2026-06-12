@@ -158,6 +158,18 @@ Test prompt:
 Get the customer profile for account NL91RABO0123456789.
 ```
 
+Discovery prompt:
+
+```text
+What can I do with this MCP server?
+```
+
+Expected behavior:
+
+```text
+The assistant first calls discoverTools or listTools, then summarizes available tools and example prompts.
+```
+
 ---
 
 # Lab 4 — Add Transactions
