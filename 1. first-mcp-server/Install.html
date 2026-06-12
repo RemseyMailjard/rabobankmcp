@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minimal MCP Server Demo with uv, FastMCP and VS Code</title>
+  <title>Minimal MCP Server Demo and Lab with uv, FastMCP and VS Code</title>
   <style>
     :root {
       color-scheme: light;
@@ -91,7 +92,9 @@
       text-transform: uppercase;
     }
 
-    h1, h2, h3 {
+    h1,
+    h2,
+    h3 {
       font-family: Georgia, "Times New Roman", serif;
       line-height: 1.15;
       margin: 0;
@@ -248,12 +251,13 @@
       color: var(--accent);
     }
 
-    ul, ol {
+    ul,
+    ol {
       margin: 12px 0 12px 22px;
       padding: 0;
     }
 
-    li + li {
+    li+li {
       margin-top: 6px;
     }
 
@@ -339,12 +343,14 @@
     }
   </style>
 </head>
+
 <body>
   <main class="page-shell">
     <section class="hero" aria-labelledby="page-title">
-      <span class="eyebrow">MCP demo guide</span>
-      <h1 id="page-title">Minimal MCP Server Demo with uv, FastMCP and VS Code</h1>
-      <p>This guide shows how to create and run a minimal MCP server for a developer demo. The goal is to build the smallest possible working example: one Python project, one MCP server, one MCP tool, running locally with uv and connected to VS Code / GitHub Copilot.</p>
+      <span class="eyebrow">MCP demo guide + lab</span>
+      <h1 id="page-title">Minimal MCP Server Demo and Lab with uv, FastMCP and VS Code</h1>
+      <p>This combined guide starts with the minimal setup for a working MCP server and continues into a hands-on lab
+        where you extend that server with tools, resources, prompts, and simulated internal banking data.</p>
 
       <div class="hero-meta">
         <div class="meta-card">
@@ -359,13 +365,17 @@
           <span>Demo outcome</span>
           <strong>One approved MCP tool</strong>
         </div>
+        <div class="meta-card">
+          <span>Lab outcome</span>
+          <strong>Extended MCP server capabilities</strong>
+        </div>
       </div>
     </section>
 
     <div class="layout">
       <aside class="toc" aria-label="Table of contents">
         <h2>Contents</h2>
-        <p>Jump to the setup steps, the code, and the demo notes.</p>
+        <p>Jump to the setup steps first, then continue into the extended lab.</p>
         <nav>
           <a href="#install-uv">1. Install uv on Windows or macOS</a>
           <a href="#create-project">2. Create a new MCP project</a>
@@ -377,7 +387,19 @@
           <a href="#start-vscode">8. Start the server in VS Code</a>
           <a href="#use-tool">9. Use the MCP tool</a>
           <a href="#demo-talk">10. What to explain during the demo</a>
-          <a href="#summary">Summary</a>
+          <a href="#summary">Part 1 Summary</a>
+          <a href="#lab-goal">Lab Goal</a>
+          <a href="#lab-0">Lab 0. Project Setup</a>
+          <a href="#lab-1">Lab 1. Connect to VS Code</a>
+          <a href="#lab-2">Lab 2. Simulated Internal Data</a>
+          <a href="#lab-3">Lab 3. Second Tool</a>
+          <a href="#lab-4">Lab 4. Transactions</a>
+          <a href="#lab-5">Lab 5. Risk Analysis</a>
+          <a href="#lab-6">Lab 6. Resource</a>
+          <a href="#lab-7">Lab 7. Prompt Template</a>
+          <a href="#lab-8">Lab 8. Final Challenge</a>
+          <a href="#lab-checklist">Lab Checklist</a>
+          <a href="#lab-summary">Lab Summary</a>
         </nav>
       </aside>
 
@@ -512,7 +534,8 @@ Uvicorn running on http://127.0.0.1:8000</code></pre>
 }</code></pre>
           </div>
           <div class="callout">
-            This is expected. The /mcp endpoint is not a normal website or REST API endpoint. It is meant to be used by an MCP-compatible client.
+            This is expected. The /mcp endpoint is not a normal website or REST API endpoint. It is meant to be used by
+            an MCP-compatible client.
           </div>
         </section>
 
@@ -579,7 +602,7 @@ In this example, the approved tool is get_account_balance.</code></pre>
         </section>
 
         <section class="section" id="summary">
-          <h2>Summary</h2>
+          <h2>Part 1 Summary</h2>
           <p>The main command flow is:</p>
           <div class="card-grid">
             <div class="info-card">
@@ -600,10 +623,385 @@ In this example, the approved tool is get_account_balance.</code></pre>
             </div>
           </div>
 
-          <p class="footer-note">Key learning point: an MCP server is not the AI assistant itself. It exposes approved tools that an AI client can call.</p>
+          <p class="footer-note">Key learning point: an MCP server is not the AI assistant itself. It exposes approved
+            tools that an AI client can call.</p>
+        </section>
+
+        <section class="section" id="lab-goal">
+          <h2>Lab Goal</h2>
+          <p>In this lab, you will build on the minimal MCP server and gradually extend it with extra capabilities.</p>
+          <p>You will learn how to expose:</p>
+          <div class="card-grid">
+            <div class="info-card">
+              <strong>Tools</strong>
+              Function calls that the AI client can invoke.
+            </div>
+            <div class="info-card">
+              <strong>Resources</strong>
+              Read-only data that the client can inspect.
+            </div>
+            <div class="info-card">
+              <strong>Prompts</strong>
+              Reusable instructions exposed by the server.
+            </div>
+            <div class="info-card">
+              <strong>Validation</strong>
+              Basic checks and error handling.
+            </div>
+          </div>
+          <div class="callout">The example is based on a fictional internal banking scenario.</div>
+        </section>
+
+        <section class="section" id="lab-0">
+          <h2>Lab 0. Project Setup</h2>
+          <h3>Step 1: Create the project</h3>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>uv init internal-bank-mcp-server
+cd internal-bank-mcp-server
+uv add fastmcp</code></pre>
+          </div>
+
+          <h3>Step 2: Create the first server</h3>
+          <p>Replace <code>main.py</code> with:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>from fastmcp import FastMCP
+
+mcp = FastMCP("Internal Bank MCP Server")
+
+
+@mcp.tool()
+def get_account_balance(account_number: str) -&gt; str:
+    """Get the balance for an internal bank account."""
+    return f"Account {account_number} has a balance of €1,250.00"
+
+
+if __name__ == "__main__":
+    mcp.run()</code></pre>
+          </div>
+
+          <h3>Step 3: Run the server</h3>
+          <div class="code-block">
+            <div class="code-block-header">PowerShell</div>
+            <pre><code>uv run fastmcp run main.py:mcp --transport http --port 8000</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="lab-1">
+          <h2>Lab 1. Connect to VS Code</h2>
+          <p>Create:</p>
+          <div class="code-block">
+            <div class="code-block-header">Path</div>
+            <pre><code>.vscode/mcp.json</code></pre>
+          </div>
+          <p>Add:</p>
+          <div class="code-block">
+            <div class="code-block-header">JSON</div>
+            <pre><code>{
+  "servers": {
+    "internal-bank-demo": {
+      "url": "http://127.0.0.1:8000/mcp"
+    }
+  }
+}</code></pre>
+          </div>
+          <p>In GitHub Copilot Chat, use Agent Mode and ask:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the internal-bank-demo MCP server to get the balance for account NL91RABO0123456789.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="lab-2">
+          <h2>Lab 2. Add Simulated Internal Data</h2>
+          <p>Replace <code>main.py</code> with:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>from fastmcp import FastMCP
+
+mcp = FastMCP("Internal Bank MCP Server")
+
+accounts = {
+    "NL91RABO0123456789": {
+        "name": "Contoso Retail BV",
+        "balance": 1250.00,
+        "currency": "EUR"
+    },
+    "NL44RABO0987654321": {
+        "name": "Fabrikam Logistics",
+        "balance": 9850.75,
+        "currency": "EUR"
+    }
+}
+
+
+@mcp.tool()
+def get_account_balance(account_number: str) -&gt; str:
+    """Get the balance for an internal bank account."""
+    account = accounts.get(account_number)
+
+    if account is None:
+        return f"No account found for {account_number}"
+
+    return (
+        f"Account: {account_number}\n"
+        f"Customer: {account['name']}\n"
+        f"Balance: {account['currency']} {account['balance']:.2f}"
+    )
+
+
+if __name__ == "__main__":
+    mcp.run()</code></pre>
+          </div>
+          <p>Test prompt:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Get the account balance for NL44RABO0987654321.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="lab-3">
+          <h2>Lab 3. Add a Second Tool</h2>
+          <p>Add this function below <code>get_account_balance</code>:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.tool()
+def get_customer_profile(account_number: str) -&gt; str:
+    """Get basic customer information for an account."""
+    account = accounts.get(account_number)
+
+    if account is None:
+        return f"No customer profile found for {account_number}"
+
+    return (
+        f"Customer name: {account['name']}\n"
+        f"Account number: {account_number}\n"
+        f"Customer type: Business customer"
+    )</code></pre>
+          </div>
+          <p>Test prompt:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Get the customer profile for account NL91RABO0123456789.</code></pre>
+          </div>
+          <p>Discovery prompt:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>What can I do with this MCP server?</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="lab-4">
+          <h2>Lab 4. Add Transactions</h2>
+          <p>Extend the data:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>transactions = {
+    "NL91RABO0123456789": [
+        {"date": "2026-06-01", "description": "Invoice payment", "amount": 450.00},
+        {"date": "2026-06-03", "description": "Office supplies", "amount": -89.95},
+        {"date": "2026-06-05", "description": "Subscription fee", "amount": -29.99}
+    ],
+    "NL44RABO0987654321": [
+        {"date": "2026-06-02", "description": "Client payment", "amount": 2500.00},
+        {"date": "2026-06-04", "description": "Transport costs", "amount": -340.50}
+    ]
+}</code></pre>
+          </div>
+          <p>Add this tool:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.tool()
+def list_recent_transactions(account_number: str) -&gt; str:
+    """List recent transactions for an internal bank account."""
+    account_transactions = transactions.get(account_number)
+
+    if account_transactions is None:
+        return f"No transactions found for {account_number}"
+
+    result = f"Recent transactions for {account_number}:\n"
+
+    for transaction in account_transactions:
+        result += (
+            f"- {transaction['date']} | "
+            f"{transaction['description']} | "
+            f"EUR {transaction['amount']:.2f}\n"
+        )
+
+    return result</code></pre>
+          </div>
+          <p>Test prompt:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>List the recent transactions for NL91RABO0123456789.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="lab-5">
+          <h2>Lab 5. Add Simple Risk Analysis</h2>
+          <p>Add this tool:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.tool()
+def analyze_account_risk(account_number: str) -&gt; str:
+    """Analyze simple risk indicators for an account."""
+    account = accounts.get(account_number)
+    account_transactions = transactions.get(account_number, [])
+
+    if account is None:
+        return f"No account found for {account_number}"
+
+    negative_transactions = [
+        t for t in account_transactions if t["amount"] &lt; 0
+    ]
+
+    if account["balance"] &lt; 0:
+        risk_level = "High"
+        reason = "The account has a negative balance."
+    elif len(negative_transactions) &gt;= 3:
+        risk_level = "Medium"
+        reason = "The account has multiple outgoing transactions."
+    else:
+        risk_level = "Low"
+        reason = "No major risk indicators were found."
+
+    return (
+        f"Risk level: {risk_level}\n"
+        f"Reason: {reason}"
+    )</code></pre>
+          </div>
+          <p>Test prompt:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Analyze the risk for account NL91RABO0123456789.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="lab-6">
+          <h2>Lab 6. Add a Resource</h2>
+          <p>Resources are read-only data that the AI client can inspect.</p>
+          <p>Add this:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.resource("bank://policy/account-review")
+def account_review_policy() -&gt; str:
+    """Internal account review policy."""
+    return """
+Internal Account Review Policy
+
+1. Always verify the account number.
+2. Never expose sensitive personal data.
+3. Use account balance and transaction history only for business purposes.
+4. Escalate accounts with negative balances.
+5. Keep auditability in mind when using AI-assisted analysis.
+"""</code></pre>
+          </div>
+          <p>Test prompt:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Read the internal account review policy from the MCP server and summarize it.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="lab-7">
+          <h2>Lab 7. Add a Prompt Template</h2>
+          <p>Prompts are reusable instructions exposed by the MCP server.</p>
+          <p>Add this:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.prompt()
+def account_review_prompt(account_number: str) -&gt; str:
+    """Create a structured prompt for reviewing an account."""
+    return f"""
+Review account {account_number}.
+
+Use the available MCP tools to:
+1. Get the account balance.
+2. Get the customer profile.
+3. List recent transactions.
+4. Analyze account risk.
+
+Return the result as a short business summary.
+"""</code></pre>
+          </div>
+          <p>Test prompt:</p>
+          <div class="code-block">
+            <div class="code-block-header">Prompt</div>
+            <pre><code>Use the account review prompt for account NL91RABO0123456789.</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="lab-8">
+          <h2>Lab 8. Final Challenge</h2>
+          <p>Add a new tool yourself:</p>
+          <div class="code-block">
+            <div class="code-block-header">Tool name</div>
+            <pre><code>detect_large_transactions</code></pre>
+          </div>
+          <p>The tool should:</p>
+          <ol>
+            <li>Accept an account number.</li>
+            <li>Accept a minimum amount.</li>
+            <li>Return all transactions above that amount.</li>
+            <li>Return a clear message if none are found.</li>
+          </ol>
+          <p>Suggested function signature:</p>
+          <div class="code-block">
+            <div class="code-block-header">Python</div>
+            <pre><code>@mcp.tool()
+def detect_large_transactions(account_number: str, minimum_amount: float) -&gt; str:
+    """Detect transactions above a certain amount."""
+    pass</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="lab-checklist">
+          <h2>Lab Checklist</h2>
+          <p>Your MCP server should now include:</p>
+          <ul>
+            <li>One MCP server</li>
+            <li>Account balance tool</li>
+            <li>Customer profile tool</li>
+            <li>Recent transactions tool</li>
+            <li>Risk analysis tool</li>
+            <li>Internal policy resource</li>
+            <li>Account review prompt</li>
+            <li>Final challenge tool</li>
+          </ul>
+        </section>
+
+        <section class="section" id="lab-summary">
+          <h2>Lab Summary</h2>
+          <h3>Tools</h3>
+          <p>Tools are functions the AI client can call.</p>
+          <div class="code-block">
+            <div class="code-block-header">Example</div>
+            <pre><code>Get the balance for this account.</code></pre>
+          </div>
+
+          <h3>Resources</h3>
+          <p>Resources are read-only data sources.</p>
+          <div class="code-block">
+            <div class="code-block-header">Example</div>
+            <pre><code>Read the internal account review policy.</code></pre>
+          </div>
+
+          <h3>Prompts</h3>
+          <p>Prompts are reusable templates.</p>
+          <div class="code-block">
+            <div class="code-block-header">Example</div>
+            <pre><code>Use the account review prompt.</code></pre>
+          </div>
+
+          <h3>Enterprise lesson</h3>
+          <p>An MCP server allows developers to expose internal functionality in a controlled way.</p>
+          <p>The AI assistant does not get unlimited access. It only gets access to the tools, resources and prompts
+            that the server provides.</p>
         </section>
       </article>
     </div>
   </main>
 </body>
+
 </html>
