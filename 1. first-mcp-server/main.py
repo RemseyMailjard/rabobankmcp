@@ -6,6 +6,30 @@ from fastmcp import FastMCP
 mcp = FastMCP("Rabobank Demo MCP Server")
 
 
+ACCOUNTS = {
+    "12345": {"customer_id": "1001", "balance": 1250.00, "currency": "EUR"},
+    "67890": {"customer_id": "1002", "balance": 2480.75, "currency": "EUR"},
+}
+
+CUSTOMERS = {
+    "1001": "John Smith",
+    "1002": "Aisha Khan",
+}
+
+BRANCHES = {
+    "BR001": {
+        "location": "Utrecht",
+        "opening_hours": "09:00 - 17:00",
+        "services": ["Daily banking", "Mortgage advice", "Business support"],
+    },
+    "BR002": {
+        "location": "Eindhoven",
+        "opening_hours": "09:00 - 17:00",
+        "services": ["Daily banking", "Investments", "Private banking"],
+    },
+}
+
+
 def _infer_tags(tool_name: str, description: str) -> list[str]:
     """Infer lightweight categories from tool metadata."""
     text = f"{tool_name} {description}".lower()
@@ -140,7 +164,43 @@ async def _discover_tool_catalog(
 @mcp.tool()
 def get_account_balance(account_number: str) -> str:
     """Get the balance for an internal Rabobank account."""
-    return f"Account {account_number} has a balance of €1,250.00"
+    account = ACCOUNTS.get(account_number)
+
+    if account is None:
+        return f"No account found for {account_number}."
+
+    return (
+        f"Account {account_number} has a balance of "
+        f"{account['currency']} {account['balance']:.2f}"
+    )
+
+
+@mcp.tool()
+def get_customer_name(customer_id: str) -> str:
+    """Get the customer name for an internal Rabobank customer."""
+    customer_name = CUSTOMERS.get(customer_id)
+
+    if customer_name is None:
+        return f"No customer found for {customer_id}."
+
+    return f"Customer {customer_id} is {customer_name}"
+
+
+@mcp.tool()
+def get_branch_information(branch_code: str) -> str:
+    """Get branch information for an internal Rabobank branch."""
+    branch = BRANCHES.get(branch_code)
+
+    if branch is None:
+        return f"No branch found for {branch_code}."
+
+    services = ", ".join(branch["services"])
+    return (
+        f"Branch {branch_code}\n"
+        f"Location: {branch['location']}\n"
+        f"Opening Hours: {branch['opening_hours']}\n"
+        f"Services: {services}"
+    )
 
 
 @mcp.tool(name="discoverTools", tags={"meta", "discovery"})

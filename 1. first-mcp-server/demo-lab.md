@@ -1,6 +1,6 @@
 # Minimal MCP Server Demo and Lab with uv, FastMCP and VS Code
 
-This combined guide starts with the minimal setup for a working MCP server and continues into a hands-on lab where you extend that server with tools, resources, prompts, and simulated internal banking data.
+This combined guide starts with the minimal setup for a working MCP server and continues into a hands-on lab where you extend that server with participant-friendly banking tools.
 
 ## Contents
 
@@ -15,18 +15,23 @@ This combined guide starts with the minimal setup for a working MCP server and c
 - 9. Use the MCP tool in GitHub Copilot Chat
 - 10. What to explain during the demo
 - Part 1 Summary
-- Lab Goal
-- Lab 0. Project Setup
-- Lab 1. Connect to VS Code
-- Lab 2. Add Simulated Internal Data
-- Lab 3. Add a Second Tool
-- Lab 4. Add Transactions
-- Lab 5. Add Simple Risk Analysis
-- Lab 6. Add a Resource
-- Lab 7. Add a Prompt Template
-- Lab 8. Final Challenge
-- Lab Checklist
-- Lab Summary
+- Goal
+- Scenario
+- Learning Objectives
+- Business Scenario
+- Task 1. Create a new MCP project
+- Task 2. Install FastMCP
+- Task 3. Create your first MCP server
+- Task 4. Create the account balance tool
+- Task 5. Create the customer lookup tool
+- Task 6. Create the branch information tool
+- Task 7. Run the MCP server
+- Task 8. Connect GitHub Copilot
+- Task 9. Test the MCP tools
+- Challenge Exercise
+- Reflection Questions
+- Expected Outcome
+- Key Takeaway
 
 ## 1. Install uv on Windows or macOS
 
@@ -245,42 +250,66 @@ The main command flow is:
 
 Key learning point: an MCP server is not the AI assistant itself. It exposes approved tools that an AI client can call.
 
-## Lab Goal
+## Goal
 
-In this lab, you will build on the minimal MCP server and gradually extend it with extra capabilities.
+Understand how an MCP server works and how AI assistants can securely interact with internal business systems through MCP tools.
 
-You will learn how to expose:
+## Scenario
 
-- Tools: Function calls that the AI client can invoke.
-- Resources: Read-only data that the client can inspect.
-- Prompts: Reusable instructions exposed by the server.
-- Validation: Basic checks and error handling.
+Imagine you are a developer at a bank. Many internal systems contain useful information, but AI assistants cannot access them directly.
 
-The example is based on a fictional internal banking scenario.
+An MCP server acts as a controlled bridge between the AI assistant and internal systems. In this lab, you create your first MCP server and expose a few internal banking operations as MCP tools.
 
-## Lab 0. Project Setup
+By the end of this exercise, GitHub Copilot should be able to discover and call your tools through the MCP protocol.
 
-### Step 1: Create the project
+## Learning Objectives
+
+After completing this lab, you should be able to:
+
+- Explain the purpose of an MCP server and the relationship between MCP clients and MCP servers.
+- Create MCP tools using FastMCP.
+- Run an MCP server locally and connect it to GitHub Copilot.
+- Test MCP tools through natural language prompts.
+
+## Business Scenario
+
+A fictional banking system contains customer, account, and branch information. Your MCP server should expose these operations:
+
+- `get_account_balance`: Retrieve the balance of an account.
+- `get_customer_name`: Retrieve a customer name.
+- `get_branch_information`: Retrieve information about a branch office.
+- For this lab, the data can be hardcoded. Later labs can connect to APIs and databases.
+
+## Task 1. Create a New MCP Project
+
+Create a new project using uv:
 
 ```powershell
-uv init internal-bank-mcp-server
-cd internal-bank-mcp-server
+uv init first-mcp-server
+cd first-mcp-server
+```
+
+## Task 2. Install FastMCP
+
+Add the required package:
+
+```powershell
 uv add fastmcp
 ```
 
-### Step 2: Create the first server
+## Task 3. Create Your First MCP Server
 
-Replace `main.py` with:
+Create the MCP server skeleton in `main.py`:
 
 ```python
 from fastmcp import FastMCP
 
-mcp = FastMCP("Internal Bank MCP Server")
+mcp = FastMCP("Rabobank Demo MCP Server")
 
 
 @mcp.tool()
 def get_account_balance(account_number: str) -> str:
-    """Get the balance for an internal bank account."""
+    """Get the balance for an internal Rabobank account."""
     return f"Account {account_number} has a balance of €1,250.00"
 
 
@@ -288,15 +317,113 @@ if __name__ == "__main__":
     mcp.run()
 ```
 
-### Step 3: Run the server
+## Task 4. Create the Account Balance Tool
+
+Implement a tool that returns a balance for a given account number.
+
+```python
+ACCOUNTS = {
+    "12345": {"customer_id": "1001", "balance": 1250.00, "currency": "EUR"},
+    "67890": {"customer_id": "1002", "balance": 2480.75, "currency": "EUR"},
+}
+
+
+@mcp.tool()
+def get_account_balance(account_number: str) -> str:
+    account = ACCOUNTS.get(account_number)
+
+    if account is None:
+        return f"No account found for {account_number}."
+
+    return (
+        f"Account {account_number} has a balance of "
+        f"{account['currency']} {account['balance']:.2f}"
+    )
+```
+
+Example output:
+
+```text
+Account 12345 has a balance of EUR 1250.00
+```
+
+## Task 5. Create the Customer Lookup Tool
+
+Implement a tool that returns customer information.
+
+```python
+CUSTOMERS = {
+    "1001": "John Smith",
+    "1002": "Aisha Khan",
+}
+
+
+@mcp.tool()
+def get_customer_name(customer_id: str) -> str:
+    customer_name = CUSTOMERS.get(customer_id)
+
+    if customer_name is None:
+        return f"No customer found for {customer_id}."
+
+    return f"Customer {customer_id} is {customer_name}"
+```
+
+Example output:
+
+```text
+Customer 1001 is John Smith
+```
+
+## Task 6. Create the Branch Information Tool
+
+Implement a tool that returns branch information.
+
+```python
+BRANCHES = {
+    "BR001": {
+        "location": "Utrecht",
+        "opening_hours": "09:00 - 17:00",
+        "services": ["Daily banking", "Mortgage advice", "Business support"],
+    }
+}
+
+
+@mcp.tool()
+def get_branch_information(branch_code: str) -> str:
+    branch = BRANCHES.get(branch_code)
+
+    if branch is None:
+        return f"No branch found for {branch_code}."
+
+    services = ", ".join(branch["services"])
+    return (
+        f"Branch {branch_code}\n"
+        f"Location: {branch['location']}\n"
+        f"Opening Hours: {branch['opening_hours']}\n"
+        f"Services: {services}"
+    )
+```
+
+Example output:
+
+```text
+Branch BR001
+Location: Utrecht
+Opening Hours: 09:00 - 17:00
+Services: Daily banking, Mortgage advice, Business support
+```
+
+## Task 7. Run the MCP Server
+
+Start the server and verify that it launches successfully:
 
 ```powershell
 uv run fastmcp run main.py:mcp --transport http --port 8000
 ```
 
-## Lab 1. Connect to VS Code
+## Task 8. Connect GitHub Copilot
 
-Create:
+Configure GitHub Copilot to use the MCP server. Create:
 
 ```text
 .vscode/mcp.json
@@ -307,18 +434,86 @@ Add:
 ```json
 {
   "servers": {
-    "internal-bank-demo": {
+    "rabobank-demo": {
       "url": "http://127.0.0.1:8000/mcp"
     }
   }
 }
 ```
 
-In GitHub Copilot Chat, use Agent Mode and ask:
+Verify that the tools are discovered in GitHub Copilot Chat.
+
+## Task 9. Test the MCP Tools
+
+Try prompts like these and observe which MCP tool is invoked:
 
 ```text
-Use the internal-bank-demo MCP server to get the balance for account NL91RABO0123456789.
+What is the balance of account 12345?
+What is the name of customer 1001?
+Show information about branch BR001.
 ```
+
+## Challenge Exercise
+
+Add a new tool:
+
+```python
+get_exchange_rate(currency)
+```
+
+Examples:
+
+```text
+USD -> EUR
+GBP -> EUR
+CHF -> EUR
+```
+
+Allow GitHub Copilot to retrieve exchange rates through the MCP server.
+
+## Reflection Questions
+
+- Why would an organization use an MCP server instead of giving direct database access to an AI assistant?
+- What advantages does MCP provide compared to hardcoding business logic inside prompts?
+- What security benefits are gained by exposing only approved tools?
+- Which internal systems in your organization could benefit from an MCP server?
+
+## Expected Outcome
+
+At the end of the lab, you should be able to ask GitHub Copilot questions such as:
+
+```text
+What is the balance of account 12345?
+What is the name of customer 1001?
+Show me information about branch BR001.
+```
+
+GitHub Copilot should automatically discover and call the appropriate MCP tool.
+
+Your MCP server should now include:
+
+- One MCP server
+- Account balance tool
+- Customer lookup tool
+- Branch information tool
+- GitHub Copilot MCP connection
+- Validated prompts that call the right tool
+
+## Key Takeaway
+
+### Tools
+
+Tools are functions the AI client can call to reach approved business functionality.
+
+```text
+What is the balance of account 12345?
+```
+
+### Key takeaway
+
+An MCP server acts as a secure integration layer between AI assistants and internal systems.
+
+By exposing carefully designed tools, organizations can give AI access to business functionality without exposing databases, APIs, or sensitive infrastructure directly.
 
 ## Lab 2. Add Simulated Internal Data
 

@@ -1,10 +1,10 @@
-# Design Styling MCP Server Demo
+# Design Styling MCP Demo
 
 This is a small demo MCP server that returns UI components as ready-to-use HTML, CSS, and JavaScript bundles.
 
-## Training lab
+## Demo lab
 
-For a more advanced guided exercise, open [design-styling-mcp-lab.html](design-styling-mcp-lab.html). It follows the same structured lab pattern as the Rabobank MCP extension lab, but focuses on expanding the design catalog, token system, and preview helpers.
+Open [demo-lab.html](demo-lab.html) for the guided lab that expands the component catalog, token system, and preview helpers.
 
 ## What it does
 
