@@ -84,8 +84,10 @@ uv python install 3.12
 Go to the folder where you want to create the demo project.
 
 ```powershell
-cd "C:\Users\Remse\Desktop\MCP-server Rabobank\MCP-server examples"
+cd "C:\YOUR\PATH\TO\MCP-server examples"
 ```
+
+> Replace the path above with the actual folder on your machine.
 
 Create a new project:
 

@@ -271,6 +271,9 @@
     }
 
     .code-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 10px 14px;
       background: rgba(255, 255, 255, 0.06);
       color: rgba(226, 232, 240, 0.78);
@@ -278,6 +281,28 @@
       letter-spacing: 0.06em;
       text-transform: uppercase;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.10);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: rgba(226, 232, 240, 0.78);
+      border-radius: 8px;
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      transition: background 0.15s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.20);
+    }
+
+    .copy-btn.copied {
+      color: #86efac;
+      border-color: rgba(134, 239, 172, 0.4);
     }
 
     pre {
@@ -454,8 +479,9 @@
           <p>Go to the folder where you want to create the demo project.</p>
           <div class="code-block">
             <div class="code-block-header">PowerShell</div>
-            <pre><code>cd "C:\Users\Remse\Desktop\MCP-server Rabobank\MCP-server examples"</code></pre>
+            <pre><code>cd "C:\YOUR\PATH\TO\MCP-server examples"</code></pre>
           </div>
+          <p class="muted">Replace the path above with the actual folder on your machine.</p>
           <p>Create a new project:</p>
           <div class="code-block">
             <div class="code-block-header">PowerShell</div>
@@ -721,12 +747,12 @@ cd first-mcp-server</code></pre>
             <div class="code-block-header">Python</div>
             <pre><code>from fastmcp import FastMCP
 
-      mcp = FastMCP("Rabobank Demo MCP Server")
+mcp = FastMCP("Rabobank Demo MCP Server")
 
 
 @mcp.tool()
-def get_account_balance(account_number: str) -&gt; str:
-        """Get the balance for an internal Rabobank account."""
+def get_account_balance(account_number: str) -> str:
+    """Get the balance for an internal Rabobank account."""
     return f"Account {account_number} has a balance of €1,250.00"
 
 
@@ -872,10 +898,29 @@ Show information about branch BR001.</code></pre>
 
         <section class="section" id="lab-challenge">
           <h2>Challenge Exercise</h2>
-          <p>Add a new tool that returns a demo exchange rate in EUR:</p>
+          <p>Add a new MCP tool called <code>get_exchange_rate</code> that accepts a currency code (e.g. <code>USD</code>) and returns its EUR rate.</p>
+          <p>Requirements:</p>
+          <ul>
+            <li>Support at least USD, GBP, and CHF.</li>
+            <li>Normalise the input to uppercase so <code>usd</code> and <code>USD</code> both work.</li>
+            <li>Return a helpful error listing supported currencies when an unknown code is passed.</li>
+          </ul>
+          <p>Test it with GitHub Copilot:</p>
           <div class="code-block">
-            <div class="code-block-header">Python</div>
-            <pre><code>EXCHANGE_RATES = {
+            <div class="code-block-header">Prompt</div>
+            <pre><code>What is the USD to EUR exchange rate?</code></pre>
+          </div>
+          <p>Expected output:</p>
+          <div class="code-block">
+            <div class="code-block-header">Example</div>
+            <pre><code>1 USD = 0.92 EUR</code></pre>
+          </div>
+
+          <details style="margin-top:16px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--accent);padding:10px 0;">Show solution</summary>
+            <div class="code-block" style="margin-top:12px;">
+              <div class="code-block-header">Python</div>
+              <pre><code>EXCHANGE_RATES = {
     "USD": "1 USD = 0.92 EUR",
     "GBP": "1 GBP = 1.17 EUR",
     "CHF": "1 CHF = 1.04 EUR",
@@ -883,7 +928,8 @@ Show information about branch BR001.</code></pre>
 
 
 @mcp.tool()
-def get_exchange_rate(currency: str) -&gt; str:
+def get_exchange_rate(currency: str) -> str:
+    """Get a demo exchange rate for a supported currency."""
     normalized_currency = currency.upper()
     exchange_rate = EXCHANGE_RATES.get(normalized_currency)
 
@@ -895,24 +941,18 @@ def get_exchange_rate(currency: str) -&gt; str:
         )
 
     return exchange_rate</code></pre>
-          </div>
-          <p>Examples:</p>
-          <div class="code-block">
-            <div class="code-block-header">Currencies</div>
-            <pre><code>USD -&gt; EUR
-GBP -&gt; EUR
-CHF -&gt; EUR</code></pre>
-          </div>
-          <p>Test it with GitHub Copilot:</p>
-          <div class="code-block">
-            <div class="code-block-header">Prompt</div>
-            <pre><code>What is the USD to EUR exchange rate?</code></pre>
-          </div>
-          <p>Expected output:</p>
-          <div class="code-block">
-            <div class="code-block-header">Example</div>
-            <pre><code>1 USD = 0.92 EUR</code></pre>
-          </div>
+            </div>
+          </details>
+        </section>
+
+        <section class="section" id="lab-reflection">
+          <h2>Reflection Questions</h2>
+          <ul>
+            <li>Why would an organization use an MCP server instead of giving direct database access to an AI assistant?</li>
+            <li>What advantages does MCP provide compared to hardcoding business logic inside prompts?</li>
+            <li>What security benefits are gained by exposing only approved tools?</li>
+            <li>Which internal systems in your organization could benefit from an MCP server?</li>
+          </ul>
         </section>
 
         <section class="section" id="lab-checklist">
@@ -938,15 +978,6 @@ Show me information about branch BR001.</code></pre>
 
         <section class="section" id="lab-summary">
           <h2>Key Takeaway</h2>
-          <h3 id="lab-reflection">Reflection Questions</h3>
-          <ul>
-            <li>Why would an organization use an MCP server instead of giving direct database access to an AI assistant?
-            </li>
-            <li>What advantages does MCP provide compared to hardcoding business logic inside prompts?</li>
-            <li>What security benefits are gained by exposing only approved tools?</li>
-            <li>Which internal systems in your organization could benefit from an MCP server?</li>
-          </ul>
-
           <h3>Tools</h3>
           <p>Tools are functions the AI client can call to reach approved business functionality.</p>
           <div class="code-block">
@@ -954,7 +985,13 @@ Show me information about branch BR001.</code></pre>
             <pre><code>What is the balance of account 12345?</code></pre>
           </div>
 
-          <h3>Key takeaway</h3>
+          <h3>Resources</h3>
+          <p>Resources are read-only data sources the AI client can access, for example internal policy documents.</p>
+
+          <h3>Prompts</h3>
+          <p>Prompts are reusable templates that guide the AI toward a specific workflow.</p>
+
+          <h3>Summary</h3>
           <p>An MCP server acts as a secure integration layer between AI assistants and internal systems.</p>
           <p>By exposing carefully designed tools, organizations can give AI access to business functionality without
             exposing databases, APIs, or sensitive infrastructure directly.</p>
@@ -962,6 +999,29 @@ Show me information about branch BR001.</code></pre>
       </article>
     </div>
   </main>
+  <script>
+    document.querySelectorAll('.code-block').forEach(block => {
+      const header = block.querySelector('.code-block-header');
+      const code = block.querySelector('pre code');
+      if (!header || !code) return;
+
+      const btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.textContent = 'Copy';
+      header.appendChild(btn);
+
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(code.innerText).then(() => {
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 1800);
+        });
+      });
+    });
+  </script>
 </body>
 
 </html>
