@@ -1,9 +1,11 @@
 [project]
 name = "first-mcp-server"
 version = "0.1.0"
-description = "Minimal FastMCP server exposing Rabobank banking demo tools over HTTP."
+description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "fastmcp>=3.4.2",
+    "httpx>=0.27.0",
+    "python-dotenv>=1.0.0",
 ]
